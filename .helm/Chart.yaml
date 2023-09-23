@@ -1,0 +1,4 @@
+---
+name: 00-go-base-tpl # ToDo: change service name to yours (without -sv!)
+version: 1.0.0
+appVersion: 0.0.0

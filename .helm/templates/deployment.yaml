@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "nameService" . }}
+  labels:
+    {{- include "labels.webserver" . | indent 4 }}
+    {{- include "labels.common" . | indent 4 }}
+spec:
+  {{- if not (kindIs "invalid" .Values.webserver.replicas) }}
+  replicas: {{ .Values.webserver.replicas }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "labels.webserver" . | indent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "labels.webserver" . | indent 8 }}
+        {{- include "labels.common" . | indent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "80"
+    spec:
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "3"
+        - name: attempts
+          value: "2"
+        - name: timeout
+          value: "1"
+        - name: single-request
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                  - {{ .Chart.Name }}
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values:
+                  - webserver
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: {{ template "nameService" . }}
+        image: {{ .Values.global.image }}
+        imagePullPolicy: Always
+        {{- if .Values.webserver.containerResources }}
+        {{ toYaml .Values.webserver.containerResources | trim | nindent 8 }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 2
+          periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        # sleep before graceful shutdown to make sure that the endpoints set are updated
+        # and traffic will not be routed on terminated pod
+        # https://github.com/kubernetes/kubernetes/issues/86280#issuecomment-583173036
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh", "-c", "sleep 10"]
+        env:
+        {{- include "service.config" . | indent 10 }}

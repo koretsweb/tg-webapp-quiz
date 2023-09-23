@@ -1,0 +1,11 @@
+version: "3.4"
+volumes:
+  mongo_data:
+  rmq_data:
+services:
+  dev-mongo:
+    image: mongo:5
+    ports:
+      - '127.0.0.1:27017:27017'
+    volumes:
+      - mongo_data

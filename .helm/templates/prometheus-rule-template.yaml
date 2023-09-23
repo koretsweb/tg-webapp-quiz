@@ -1,0 +1,45 @@
+{{- $root := . -}}
+
+{{- range $prometheusName, $rulesConfig := .Values.prometheusRules }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ template "nameService" $root }}-{{ $prometheusName }}
+  labels:
+    prometheus: prom-{{$prometheusName}}
+    app.kubernetes.io/component: alert
+    {{- include "labels.name" $root.Chart.Name | indent 4 }}
+    {{- include "labels.common" $root | indent 4 }}
+spec:
+  groups:
+  {{- range $group := $rulesConfig.groups }}
+  - name: {{ template "nameService" $root }}-{{ $group.name }}
+    rules:
+      {{- range $rule := $group.rules }}
+    - expr: {{ $rule.expr }}
+          {{- if $rule.alert }}
+      alert: {{ $rule.alert }}
+          {{- end }}
+          {{- if $rule.record }}
+      record: {{ $rule.record }}
+          {{- end }}
+      labels:
+        namespace: {{ $root.Values.global.namespace }}
+        service: {{ $root.Chart.Name }}
+            {{- if $rule.alert }}
+        severity: {{ $rule.severity }}
+            {{- end }}
+            {{- if $rule.labels }}
+{{ toYaml $rule.labels | trim | nindent 12 }}
+            {{- end }}
+          {{- if $rule.alert }}
+      annotations:
+        summary: {{ $rule.summary }}
+            {{- if $rule.annotations }}
+{{ toYaml $rule.annotations | trim | nindent 12 }}
+            {{- end }}
+          {{- end}}
+      {{- end }}
+  {{- end }}
+{{- end }}

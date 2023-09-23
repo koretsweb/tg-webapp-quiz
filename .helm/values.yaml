@@ -1,0 +1,74 @@
+#preReleaseJobs:
+#  setup:
+#    command: [ 'setup' ]
+
+# Inhibition rules example.
+# An inhibition rule mutes an alert (targetMatch) matching a set of matchers when an alert (sourceMatch) exists that
+# matches another set of matchers. Both target and source alerts must have the same label values for the label names
+# in the equal list.
+#alertInhibitRules:
+#  - targetMatch:
+#      - name: alertname
+#        value: RabbitMQEventBusQueueMessagesCountGT1000For1m
+#      - name: queue
+#        value: ev-bus.queue.target_queue.*
+#        regex: true
+#    sourceMatch:
+#      - name: alertname
+#        value: RabbitMQEventBusQueueMessagesCountGT1000
+#      - name: queue
+#        value: ev-bus.queue.target_queue.*
+#        regex: true
+#    equal:
+#      - queue
+#  - targetMatch:
+#      - name: alertname
+#        value: PodCrashLoopBackOff
+#      - name: pod
+#        value: 00-go-base-tpl.*
+#        regex: true
+
+# Custom prometheus rules example
+#prometheusRules:
+#  kube:
+#    groups:
+#      - name: http
+#        rules:
+#          - alert: ListPlayersHighResponseLatency
+#            expr: histogram_quantile(0.9, sum(rate(http_request_duration_seconds_bucket{service="00-go-base-tpl",handler="list_players"}[30s])) by (le)) > 0.7
+#            severity: critical
+#            summary: List players request 0.9 percentile latency more than 700ms
+#  custom:
+#    groups:
+#      - name: queues-status
+#        rules:
+#          - alert: RabbitMQEventBusQueueMessagesCountGT1000
+#            expr: rabbitmq_queue_messages{queue=~"(ev-bus.queue.target_queue)"} > 1000
+#            severity: warning
+#            summary: RabbitMQ queue messages {{$labels.queue}} > 1000
+#  cadvisor:
+#    groups:
+#      - name: container-resources
+#        rules:
+#          - record: BaseTPLContainerFSUsage
+#            expr: container_fs_usage_bytes{pod~="00-go-base-tpl.*"}
+
+# todo: hpa config example. Remove it if hpa isn't required
+#webserver:
+#  hpa:
+#    enabled: false
+#    minReplicas: 1
+#    maxReplicas: 20
+#    metrics:
+#      - type: Resource
+#        resource:
+#          name: cpu
+#          target:
+#            type: Utilization
+#            averageUtilization: 80
+#      - type: Resource
+#        resource:
+#          name: memory
+#          target:
+#            type: Utilization
+#            averageUtilization: 80

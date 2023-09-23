@@ -1,0 +1,17 @@
+{{- define "nameService" }}
+{{- .Chart.Name }}-sv
+{{- end }}
+
+{{- define "labels.name" }}
+app.kubernetes.io/name: {{ . }}
+{{- end }}
+
+{{- define "labels.common" }}
+app.kubernetes.io/part-of: {{ .Chart.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+
+{{- define "labels.webserver" }}
+{{- include "labels.name" .Chart.Name }}
+app.kubernetes.io/component: webserver
+{{- end }}

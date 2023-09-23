@@ -1,0 +1,48 @@
+{{- $root := . -}}
+
+{{- range $cronName, $cronConfig := .Values.crons }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $root.Chart.Name }}-cron-{{ $cronName }}
+  labels:
+    app.kubernetes.io/component: cron
+    {{- include "labels.name" $cronName | indent 4 }}
+    {{- include "labels.common" $root | indent 4 }}
+spec:
+  schedule: {{ $cronConfig.schedule | quote }}
+  startingDeadlineSeconds: {{ default 60 $cronConfig.startingDeadlineSeconds }}
+  failedJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      labels:
+        app.kubernetes.io/component: cron
+        {{- include "labels.name" $cronName | indent 8 }}
+        {{- include "labels.common" $root | indent 8 }}
+    spec:
+      activeDeadlineSeconds: {{ default 60 $cronConfig.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/component: cron
+            {{- include "labels.name" $cronName | indent 12 }}
+            {{- include "labels.common" $root | indent 12 }}
+        spec:
+          containers:
+            - name: {{ $cronName }}
+              imagePullPolicy: IfNotPresent
+              image: {{ $root.Values.global.image }}
+              command: {{- range $args := $cronConfig.command }}
+                - {{ $args| quote }}
+              {{- end }}
+              {{- if $cronConfig.resources }}
+              resources:
+                {{ toYaml $cronConfig.resources | trim | nindent 16 }}
+              {{- end }}
+              env:
+                {{ include "service.config" $root | indent 14 }}
+          restartPolicy: Never
+---
+{{- end }}

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <title>Hello, Golang!</title>
+</head>
+<style>
+    body {
+        color: var(--tg-theme-text-color);
+        background: var(--tg-theme-bg-color);
+    }
+
+    .quiz-container {
+        display: none;
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .question {
+        margin-bottom: 20px;
+    }
+
+    .answers {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .answer-button {
+        width: 150px;
+        height: 50px;
+        margin: 10px;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+</style>
+<body>
+<div id="home">
+    <h1>Hello,
+        <script>document.write(window.Telegram.WebApp.initDataUnsafe.user.first_name)</script>
+        , also known as
+        <script>
+            document.write(window.Telegram.WebApp.initDataUnsafe.user.username)
+        </script>
+    </h1>
+</div>
+
+<div id="question" class="quiz-container">
+    <div class="question">
+        <h1 id="question_text"></h1>
+    </div>
+    <div class="answers">
+        <button class="answer-button" data-correct="" id="option_1"></button>
+        <button class="answer-button" data-correct="" id="option_2"></button>
+        <button class="answer-button" data-correct="" id="option_3"></button>
+        <button class="answer-button" data-correct="" id="option_4"></button>
+    </div>
+</div>
+
+<script>
+    window.Telegram.WebApp.MainButton.setText("Play")
+
+    document.getElementById("option_1").addEventListener("click", function() {
+        document.getElementById("option_2").disabled = true
+        document.getElementById("option_3").disabled = true
+        document.getElementById("option_4").disabled = true
+
+        if (this.innerText === this.getAttribute("correct")) {
+            this.style.backgroundColor = "green";
+        } else {
+            this.style.backgroundColor = "red";
+        }
+    });
+    document.getElementById("option_2").addEventListener("click", function() {
+        document.getElementById("option_1").disabled = true
+        document.getElementById("option_3").disabled = true
+        document.getElementById("option_4").disabled = true
+
+        if (this.innerText === this.getAttribute("correct")) {
+            this.style.backgroundColor = "green";
+        } else {
+            this.style.backgroundColor = "red";
+        }
+    });
+    document.getElementById("option_3").addEventListener("click", function() {
+        document.getElementById("option_1").disabled = true
+        document.getElementById("option_2").disabled = true
+        document.getElementById("option_4").disabled = true
+
+        if (this.innerText === this.getAttribute("correct")) {
+            this.style.backgroundColor = "green";
+        } else {
+            this.style.backgroundColor = "red";
+        }
+    });
+    document.getElementById("option_4").addEventListener("click", function() {
+        document.getElementById("option_1").disabled = true
+        document.getElementById("option_2").disabled = true
+        document.getElementById("option_3").disabled = true
+
+        if (this.innerText === this.getAttribute("correct")) {
+            this.style.backgroundColor = "green";
+        } else {
+            this.style.backgroundColor = "red";
+        }
+    });
+
+    Telegram.WebApp.onEvent('mainButtonClicked', function () {
+        window.Telegram.WebApp.MainButton.hide()
+
+        const url = '/questions';
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('home').remove()
+                document.getElementById("question").style.display = "block";
+
+                document.getElementById("question_text").innerText = data[0].text;
+                document.getElementById("option_1").innerText = data[0].option_1;
+                document.getElementById("option_1").setAttribute("correct", data[0].correct_option);
+
+                document.getElementById("option_2").innerText = data[0].option_2;
+                document.getElementById("option_2").setAttribute("correct", data[0].correct_option);
+
+                document.getElementById("option_3").innerText = data[0].option_3;
+                document.getElementById("option_3").setAttribute("correct", data[0].correct_option);
+
+                document.getElementById("option_4").innerText = data[0].option_4;
+                document.getElementById("option_4").setAttribute("correct", data[0].correct_option);
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);  // Вывод ошибки, если она произошла
+            });
+    })
+
+    window.Telegram.WebApp.MainButton.show()
+</script>
+
+
+</body>
+</html>

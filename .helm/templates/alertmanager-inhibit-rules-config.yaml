@@ -1,0 +1,12 @@
+{{ if .Values.alertInhibitRules }}
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: {{ .Chart.Name }}-alertmanager-inhibit-rules-config
+  labels:
+    alertmanagerConfig: sv-alertmanager
+    {{- include "labels.common" . | indent 4 }}
+spec:
+  inhibitRules:
+{{ toYaml .Values.alertInhibitRules | trim | indent 4 }}
+{{- end }}

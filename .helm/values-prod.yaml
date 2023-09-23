@@ -1,0 +1,10 @@
+webserver:
+  containerResources:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+
+debug: false
+
+daemons: []

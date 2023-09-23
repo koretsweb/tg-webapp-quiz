@@ -1,0 +1,45 @@
+{{- $root := . -}}
+
+{{- range $daemonName, $daemonConfig := .Values.daemons }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $root.Chart.Name }}-sv-{{ $daemonName }}
+  labels:
+    app.kubernetes.io/component: daemon
+    {{- include "labels.name" $root.Chart.Name | indent 4 }}
+    {{- include "labels.common" $root | indent 4 }}
+spec:
+  {{- if $daemonConfig.replicas }}
+  replicas: {{ $daemonConfig.replicas }}
+  {{- end }}
+  {{- if $daemonConfig.strategy }}
+  strategy:
+    {{ toYaml $daemonConfig.strategy | trim | nindent 4 }}
+  {{- end }}
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: daemon
+      {{- include "labels.name" $root.Chart.Name | indent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: daemon
+        {{- include "labels.name" $root.Chart.Name | indent 8 }}
+        {{- include "labels.common" $root | indent 8 }}
+    spec:
+      containers:
+      - name: {{ $daemonName }}
+        imagePullPolicy: IfNotPresent
+        image: {{ $root.Values.global.image }}
+        {{- if $daemonConfig.containerResources }}
+        {{ toYaml $daemonConfig.containerResources | trim | nindent 8 }}
+        {{- end }}
+        command: {{- range $args := $daemonConfig.command }}
+        - {{ $args| quote }}
+        {{- end }}
+        env:
+          {{- include "service.config" $root | indent 10 }}
+---
+{{- end }}

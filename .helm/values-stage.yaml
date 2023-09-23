@@ -1,0 +1,37 @@
+jaegerSamplerType: const
+jaegerSamplerParam: 1 # trace every request on stage
+pyroscopeDsn: "http://pyroscope.pyroscope.svc.cluster.local:4040"
+
+webserver:
+  containerResources:
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+
+debug: true
+
+daemons: []
+
+#daemons:
+#  some-recreate-consumer:
+#    command: ["./00-go-base-tpl-sv-consume"]
+#    replicas: 1 #hardcode number of replicas
+#    strategy:
+#      type: Recreate #need to be used within consumers to ensure that there is only one pod exists at a time
+#  some-daemon:
+#    command: ["./00-go-base-tpl-sv-daemon"]
+#    # omit replicas if you want to set it number within k8s cluster
+#    strategy:
+#      type: RollingUpdate #use when there is no race condition between multiple pods
+#      rollingUpdate:
+#        maxUnavailable: 2
+
+#crons:
+#  some-cron-scheduled-stuff:
+#    command: ["./start-my-awesome-cron"]
+#    schedule: "*/30 * * * *" #each 30 minutes
+#    resources:
+#      requests:
+#        memory: "256Mi"
+#        cpu: "250m"

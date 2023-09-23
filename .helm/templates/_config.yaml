@@ -1,0 +1,31 @@
+{{- define "service.config" }}
+- name: JAEGER_AGENT_HOST
+  valueFrom: {fieldRef: {fieldPath: status.hostIP}}
+- name: JAEGER_AGENT_PORT
+  value: "6831"
+- name: JAEGER_SERVICE_NAME
+  value: {{ .Chart.Name | quote }}
+- name: JAEGER_SAMPLER_TYPE
+  value: {{ default "probabilistic" .Values.jaegerSamplerType | quote }}
+- name: JAEGER_SAMPLER_PARAM
+  value: {{ default "0.05" .Values.jaegerSamplerParam | quote  }}
+- name: LISTEN
+  value: "0.0.0.0:80"
+
+# Secret example
+#- name: PGSQL_DSN
+#  valueFrom: { secretKeyRef: { name: {{ .Chart.Name }}-secret, key: pgsql_dsn }}
+#- name: MONGO_DSN
+#  valueFrom: { secretKeyRef: { name: {{ .Chart.Name }}-secret, key: mongodb_dsn }}
+#- name: REDIS_DSN
+#  valueFrom: { secretKeyRef: { name: {{ .Chart.Name }}-secret, key: redis_dsn }}
+#- name: RABBITMQ_DSN
+#  valueFrom: { secretKeyRef: { name: {{ .Chart.Name }}-secret, key: rabbitmq_dsn }}
+
+#
+- name: DEBUG
+  value: {{ .Values.debug | quote }}
+
+- name: PYROSCOPE_DSN
+  value: {{ default "" .Values.pyroscopeDsn | quote }}
+{{ end -}}
